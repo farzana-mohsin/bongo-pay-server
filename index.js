@@ -53,13 +53,12 @@ async function run() {
 
     const usersCollection = client.db("bongoDB").collection("users");
 
+    // Create a user object
     app.post("/register", async (req, res) => {
       // Hash pin
       const salt = await bcrypt.genSalt(10);
       const hashedPin = await bcrypt.hash(req.body.pin, salt);
-      console.log("hashed pin: " + hashedPin);
 
-      // Create a user object
       let user = {
         name: req.body.name,
         email: req.body.email,
@@ -77,25 +76,34 @@ async function run() {
     });
 
     app.post("/login", async (req, res) => {
-      User.findOne({ email: req.body.email }, async (err, user) => {
-        if (err) {
-          console.log(err);
-        } else {
-          if (user) {
-            const validPass = await bcrypt.compare(req.body.pin, user.pin);
-            if (!validPass)
-              return res.status(401).send("Mobile/Email or Password is wrong");
+      const email = req.body.email;
+      const pin = req.body.pin;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      console.log("result", result);
 
-            // Create and assign token
-            let payload = { id: user._id };
-            const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+      // console.log("result.pin", result.pin);
+      // console.log("pin", pin);
+      // const salt = await bcrypt.genSalt(10);
+      // const hashedPin = await bcrypt.hash(req.body.pin, salt);
+      // console.log("hashedPin", hashedPin);
 
-            res.status(200).header("auth-token", token).send({ token: token });
-          } else {
-            res.status(401).send("Invalid mobile");
-          }
-        }
-      });
+      if (result) {
+        const validPass = await bcrypt.compare(pin, result.pin);
+        console.log("valid pass?", validPass);
+        if (!validPass) return res.status(401).send("Pin is wrong");
+
+        //       // Create and assign token
+        //       let payload = { id: user._id };
+        //       const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+
+        //       res.status(200).header("auth-token", token).send({ token: token });
+        //     } else {
+        //       res.status(401).send("Invalid mobile");
+        //     }
+      }
+      res.send(result);
+      // });
     });
 
     await client.db("admin").command({ ping: 1 });
