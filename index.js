@@ -52,6 +52,9 @@ async function run() {
     // Send a ping to confirm a successful connection
 
     const usersCollection = client.db("bongoDB").collection("users");
+    const transactionCollection = client
+      .db("bongoDB")
+      .collection("transaction");
 
     // Create a user object
     app.post("/register", async (req, res) => {
@@ -65,6 +68,7 @@ async function run() {
         pin: hashedPin,
         phone: req.body.phone,
         role: "user",
+        balance: 40,
       };
 
       const result = await usersCollection.insertOne(user);
@@ -104,6 +108,20 @@ async function run() {
       }
       res.send(result);
       // });
+    });
+
+    app.post("/cash-in", async (req, res) => {
+      const email = req.body.email;
+      const amount = parseFloat(req.body.amount);
+      const query = { email: email, amount };
+      const result = await transactionCollection.insertOne(query);
+      res.send(result);
+    });
+
+    app.post("/cash-out", async (req, res) => {
+      const cashOutRequest = req.body;
+      const result = await transactionCollection.insertOne(cashOutRequest);
+      res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });
