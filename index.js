@@ -125,7 +125,19 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/users/:email", async (req, res) => {
+      const email = req.query.email;
+      const query = { email };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
+
     // for agents
+    app.get("/pending-cash-request", async (req, res) => {
+      const query = { status: { $eq: "pending" } };
+      const result = await transactionCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.get("/cash-in/:id", async (req, res) => {
       const id = req.params.id;
