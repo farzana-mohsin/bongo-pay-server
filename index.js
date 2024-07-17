@@ -4,7 +4,7 @@ const cors = require("cors");
 const app = express();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = 3000;
 
 // middleware
@@ -56,7 +56,7 @@ async function run() {
       .db("bongoDB")
       .collection("transaction");
 
-    // Create a user object
+    // for users
     app.post("/register", async (req, res) => {
       // Hash pin
       const salt = await bcrypt.genSalt(10);
@@ -122,6 +122,32 @@ async function run() {
     app.post("/cash-out", async (req, res) => {
       const cashOutRequest = req.body;
       const result = await transactionCollection.insertOne(cashOutRequest);
+      res.send(result);
+    });
+
+    // for agents
+
+    app.get("/cash-in/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(query);
+      const result = await transactionCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/cash-in/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateStatus = req.body;
+      console.log(updateStatus);
+
+      const updateDoc = {
+        $set: {
+          status: updateStatus.status,
+        },
+      };
+
+      const result = await transactionCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
