@@ -113,7 +113,8 @@ async function run() {
     app.post("/cash-in", async (req, res) => {
       const email = req.body.email;
       const amount = parseFloat(req.body.amount);
-      const query = { email: email, amount };
+      const status = req.body.status;
+      const query = { email, amount, status };
       const result = await transactionCollection.insertOne(query);
       res.send(result);
     });
