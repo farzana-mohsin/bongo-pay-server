@@ -137,6 +137,11 @@ async function run() {
 
     app.patch("/cash-in/:id", async (req, res) => {
       const id = req.params.id;
+      const email = req.body.email;
+      const amount = req.body.amount;
+      console.log("email", email);
+      console.log("amount", amount);
+
       const filter = { _id: new ObjectId(id) };
       const updateStatus = req.body;
       console.log(updateStatus);
@@ -148,7 +153,20 @@ async function run() {
       };
 
       const result = await transactionCollection.updateOne(filter, updateDoc);
-      res.send(result);
+
+      const balance = req.body;
+      const emailFilter = { email };
+      const updateBalanceDoc = {
+        $inc: {
+          balance: amount,
+        },
+      };
+      const result2 = await usersCollection.updateOne(
+        emailFilter,
+        updateBalanceDoc
+      );
+
+      res.send(result2);
     });
 
     await client.db("admin").command({ ping: 1 });
