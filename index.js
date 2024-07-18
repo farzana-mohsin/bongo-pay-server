@@ -149,36 +149,36 @@ async function run() {
 
     app.patch("/cash-in/:id", async (req, res) => {
       const id = req.params.id;
+
       const email = req.body.email;
       const amount = req.body.amount;
+      const status = req.body.status;
+      // save agent email to agentEmail variable
       console.log("email", email);
       console.log("amount", amount);
+      console.log(status);
 
       const filter = { _id: new ObjectId(id) };
-      const updateStatus = req.body;
-      console.log(updateStatus);
 
       const updateDoc = {
         $set: {
-          status: updateStatus.status,
+          status: status,
         },
       };
 
-      const result = await transactionCollection.updateOne(filter, updateDoc);
+      await transactionCollection.updateOne(filter, updateDoc);
 
-      const balance = req.body;
       const emailFilter = { email };
       const updateBalanceDoc = {
         $inc: {
           balance: parseFloat(amount),
         },
       };
-      const result2 = await usersCollection.updateOne(
-        emailFilter,
-        updateBalanceDoc
-      );
+      await usersCollection.updateOne(emailFilter, updateBalanceDoc);
 
-      res.send(result2);
+      // search with agent email and update balance with $dec
+
+      // res.send(result3);
     });
 
     // for admins
