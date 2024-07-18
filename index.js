@@ -67,7 +67,7 @@ async function run() {
         email: req.body.email,
         pin: hashedPin,
         phone: req.body.phone,
-        role: "user",
+        role: "pending",
         balance: 40,
       };
 
@@ -126,8 +126,8 @@ async function run() {
     });
 
     app.get("/users/:email", async (req, res) => {
-      const email = req.query.email;
-      const query = { email };
+      const email = req.params.email;
+      const query = { email: email };
       const result = await usersCollection.findOne(query);
       res.send(result);
     });
@@ -170,7 +170,7 @@ async function run() {
       const emailFilter = { email };
       const updateBalanceDoc = {
         $inc: {
-          balance: amount,
+          balance: parseFloat(amount),
         },
       };
       const result2 = await usersCollection.updateOne(
